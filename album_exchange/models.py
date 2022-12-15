@@ -14,8 +14,6 @@ ma = Marshmallow()
 def load_user(user_id):
     return User.query.get(user_id)
 
-
-
 # We might not need this, google firebase will give each user a token already so I can just get that from the database. 
 class User(db.Model, UserMixin):
     id = db.Column(db.String, primary_key = True)
@@ -54,34 +52,85 @@ class User(db.Model, UserMixin):
 class Album(db.Model):
     id = db.Column(db.String, primary_key = True)
     album_title = db.Column(db.String(150), nullable = False)
-    artist_name = db.Column(db.String(100), nullable = False)
-    year = db.Column(db.Integer, nullable = True)
+    artist_name = db.Column(db.String(100), nullable = True)
+    release_date = db.Column(db.String, nullable = True)
     genre = db.Column(db.String(200), nullable = True)
     number_of_tracks = db.Column(db.Integer, nullable = True)
     label = db.Column(db.String(100), nullable = True)
     cover_url = db.Column(db.String(9999), nullable = True)
-    user_token = db.Column(db.String, db.ForeignKey('user.token'), nullable = False)
+    # We really only need the deezer id for the one api call but storing it might be useful, idk
+    deezer_id = db.Column(db.String(20), nullable = True)
+    rating = db.Column(db.String(10), nullable = True)
+    review = db.Column(db.String, nullable = True)
+    # TODO Make nullable = False when we figure out how to get the uid into flask
+    user_token = db.Column(db.String, nullable = False)
 
-    def __init__(self, album_title, artist_name, year, genre, number_of_tracks, label, user_token, cover_url, id = ''):
+    def __init__(self, album_title, artist_name, release_date, genre, number_of_tracks, label, cover_url, deezer_id, rating, review, user_token='', id=''):
         self.id = self.set_id()
         self.album_title = album_title
         self.artist_name = artist_name
-        self.year = year
+        self.release_date = release_date
         self.genre = genre
         self.number_of_tracks = number_of_tracks
         self.label = label
         self.cover_url = cover_url
+        self.deezer_id = deezer_id
+        self.rating = rating
+        self.review = review
         self.user_token = user_token
 
-        def set_id(self):
-            return secrets.token_urlsafe()
+    def set_id(self):
+        return secrets.token_urlsafe()
 
-        def __repr__(self):
-            return f"{self.album_title} has been added to your library!"
+    def __repr__(self):
+        return f"{self.album_title} has been added to your library!"
 
 class AlbumSchema(ma.Schema):
     class Meta:
-        fields = ['id', 'album_title', 'artist_name', 'year', 'genre', 'number_of_tracks', 'cover_url', 'label']
+        fields = ['id', 'album_title', 'artist_name', 'release_date', 'genre', 'number_of_tracks', 'cover_url', 'deezer_id', 'review', 'rating', 'label']
 
 album_schema = AlbumSchema()
 albums_schema = AlbumSchema(many = True)
+
+class ExchangeAlbum(db.Model):
+    id = db.Column(db.String, primary_key = True)
+    album_title = db.Column(db.String(150), nullable = False)
+    artist_name = db.Column(db.String(100), nullable = True)
+    release_date = db.Column(db.String, nullable = True)
+    genre = db.Column(db.String(200), nullable = True)
+    number_of_tracks = db.Column(db.Integer, nullable = True)
+    label = db.Column(db.String(100), nullable = True)
+    cover_url = db.Column(db.String(9999), nullable = True)
+    # We really only need the deezer id for the one api call but storing it might be useful, idk
+    deezer_id = db.Column(db.String(20), nullable = True)
+    rating = db.Column(db.String(10), nullable = True)
+    review = db.Column(db.String, nullable = True)
+    # TODO Make nullable = False when we figure out how to get the uid into flask
+    user_token = db.Column(db.String, nullable = False)
+
+    def __init__(self, album_title, artist_name, release_date, genre, number_of_tracks, label, cover_url, deezer_id, rating, review, user_token='', id=''):
+        self.id = self.set_id()
+        self.album_title = album_title
+        self.artist_name = artist_name
+        self.release_date = release_date
+        self.genre = genre
+        self.number_of_tracks = number_of_tracks
+        self.label = label
+        self.cover_url = cover_url
+        self.deezer_id = deezer_id
+        self.rating = rating
+        self.review = review
+        self.user_token = user_token
+
+    def set_id(self):
+        return secrets.token_urlsafe()
+
+    def __repr__(self):
+        return f"{self.album_title} has been added to your library!"
+
+class ExchangeAlbumSchema(ma.Schema):
+    class Meta:
+        fields = ['id', 'album_title', 'artist_name', 'release_date', 'genre', 'number_of_tracks', 'cover_url', 'deezer_id', 'review', 'rating', 'label']
+
+exchange_album_schema = ExchangeAlbumSchema()
+exchange_albums_schema = ExchangeAlbumSchema(many = True)
