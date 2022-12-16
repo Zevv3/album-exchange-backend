@@ -87,7 +87,7 @@ def update_album(token, id):
 @api.route('/albums/<id>', methods=['DELETE'])
 def delete_album(id):
     album = Album.query.get(id)
-
+    print(album)
     db.session.delete(album)
     db.session.commit()
     response = album_schema.dump(album)
