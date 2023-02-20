@@ -130,3 +130,15 @@ def send_exchange():
 
     response = exchange_album_schema.dump(album)
     return jsonify(response)
+
+@api.route('/exchange/review/<token>/<id>', methods=['POST', 'PUT'])
+# @token_required
+def review_exchange(token, id):
+    album = ExchangeAlbum.query.get(id)
+
+    album.rating = request.json['rating']
+    album.review = request.json['review']
+
+    db.session.commit()
+    response = exchange_album_schema.dump(album)
+    return jsonify(response)
