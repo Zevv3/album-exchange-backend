@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify
 # from album_exchange.helpers import token_required
 from album_exchange.models import db, Album, ExchangeAlbum, album_schema, albums_schema, exchange_album_schema, exchange_albums_schema
 
+import random
+
 api = Blueprint('api', __name__, url_prefix='/api')
 
 @api.route('/getdata', methods = ['GET'])
@@ -141,4 +143,25 @@ def review_exchange(token, id):
 
     db.session.commit()
     response = exchange_album_schema.dump(album)
+    return jsonify(response)
+
+@api.route('/exchange/<token>', methods=['POST', 'PUT'])
+# @token_required
+def start_exchange(token):
+    # I will set up an admin account and set the token of that account to admin_token 
+    # so that not just anybody can start the exchange
+    # if token == admin_token
+    albums = ExchangeAlbum.query.all()
+    users = [album.id for album in albums]
+    random.shuffle(users)
+    for album in albums:
+        if album.id == users[0]:
+            album.id = users[1]
+            users.pop(1)
+        else:
+            album.id = users[0]
+            users.pop(0)
+    
+    db.session.commit()
+    response = exchange_album_schema.dump(albums)
     return jsonify(response)
