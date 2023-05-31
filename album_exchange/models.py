@@ -105,7 +105,6 @@ class ExchangeAlbum(db.Model):
     deezer_id = db.Column(db.String(20), nullable = True)
     rating = db.Column(db.String(10), nullable = True)
     review = db.Column(db.String, nullable = True)
-    # TODO Make nullable = False when we figure out how to get the uid into flask
     user_token = db.Column(db.String, nullable = False)
 
     def __init__(self, album_title, artist_name, release_date, genre, number_of_tracks, label, cover_url, deezer_id, rating, review, user_token='', id=''):

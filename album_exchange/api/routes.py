@@ -2,7 +2,16 @@ from flask import Blueprint, request, jsonify
 # from album_exchange.helpers import token_required
 from album_exchange.models import db, Album, ExchangeAlbum, album_schema, albums_schema, exchange_album_schema, exchange_albums_schema
 
+import os
+from dotenv import load_dotenv
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+load_dotenv(os.path.join(basedir, '.env'))
+
 import random
+
+admin_token = os.environ.get('ADMIN_TOKEN')
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -150,18 +159,19 @@ def review_exchange(token, id):
 def start_exchange(token):
     # I will set up an admin account and set the token of that account to admin_token 
     # so that not just anybody can start the exchange
-    # if token == admin_token
-    albums = ExchangeAlbum.query.all()
-    users = [album.id for album in albums]
-    random.shuffle(users)
-    for album in albums:
-        if album.id == users[0]:
-            album.id = users[1]
-            users.pop(1)
-        else:
-            album.id = users[0]
-            users.pop(0)
-    
-    db.session.commit()
-    response = exchange_album_schema.dump(albums)
-    return jsonify(response)
+    if token == admin_token:
+        albums = ExchangeAlbum.query.all()
+        users = [album.id for album in albums]
+        random.shuffle(users)
+        for album in albums:
+            if album.id == users[0]:
+                album.id = users[1]
+                users.pop(1)
+            else:
+                album.id = users[0]
+                users.pop(0)
+        db.session.commit()
+        response = exchange_album_schema.dump(albums)
+        return jsonify(response)
+    else:
+        return jsonify({"error message": "You do not have permission to perform this action"}), 401
