@@ -71,7 +71,7 @@ def get_one_album(token, id):
 
 @api.route('/exchange', methods=['GET'])
 def get_exchange_albums():
-    albums = ExchangeAlbum.query.filter_by(user_token='').all()
+    albums = ExchangeAlbum.query.all()
     response = exchange_albums_schema.dump(albums)
     print(response)
     return jsonify(response)
@@ -129,12 +129,12 @@ def send_exchange():
     deezer_id = request.json['deezer_id']
     rating = ''
     review = ''
-    # user_token = request.json['user_token']
+    user_token = request.json['user_token']
     # user_token = current_user_token.token
 
     # print(f"User Token: {current_user_token.token}")
 
-    album = ExchangeAlbum(album_title, artist_name, release_date, genre, number_of_tracks, label, cover_url, deezer_id, rating, review)
+    album = ExchangeAlbum(album_title, artist_name, release_date, genre, number_of_tracks, label, cover_url, deezer_id, rating, review, user_token)
 
     db.session.add(album)
     db.session.commit()
