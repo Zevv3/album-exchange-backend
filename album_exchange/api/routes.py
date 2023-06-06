@@ -116,9 +116,9 @@ def review_album(token, id):
     response = album_schema.dump(album)
     return jsonify(response)
 
-@api.route('/exchange', methods=['POST', 'GET'])
+@api.route('/exchange/<token>', methods=['POST', 'GET'])
 # @token_required
-def send_exchange():
+def send_exchange(token):
     album_title = request.json['album_title']
     artist_name = request.json['artist_name']
     release_date = request.json['release_date']
@@ -129,7 +129,7 @@ def send_exchange():
     deezer_id = request.json['deezer_id']
     rating = ''
     review = ''
-    user_token = request.json['user_token']
+    user_token = token
     # user_token = current_user_token.token
 
     # print(f"User Token: {current_user_token.token}")
