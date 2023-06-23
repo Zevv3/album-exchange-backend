@@ -129,7 +129,7 @@ class ExchangeAlbum(db.Model):
 
 class ExchangeAlbumSchema(ma.Schema):
     class Meta:
-        fields = ['id', 'album_title', 'artist_name', 'release_date', 'genre', 'number_of_tracks', 'cover_url', 'deezer_id', 'review', 'rating', 'label']
+        fields = ['id', 'album_title', 'artist_name', 'release_date', 'genre', 'number_of_tracks', 'cover_url', 'deezer_id', 'review', 'rating', 'label', 'user_token']
 
 exchange_album_schema = ExchangeAlbumSchema()
 exchange_albums_schema = ExchangeAlbumSchema(many = True)

@@ -154,7 +154,7 @@ def review_exchange(token, id):
     response = exchange_album_schema.dump(album)
     return jsonify(response)
 
-@api.route('/exchange/<token>', methods=['POST', 'PUT'])
+@api.route('/exchange/start/<token>', methods=['POST', 'PUT'])
 # @token_required
 def start_exchange(token):
     # I will set up an admin account and set the token of that account to admin_token 
@@ -173,5 +173,15 @@ def start_exchange(token):
         db.session.commit()
         response = exchange_album_schema.dump(albums)
         return jsonify(response)
+    else:
+        return jsonify({"error message": "You do not have permission to perform this action"}), 401
+    
+@api.route('/exchange/clear/<token>', methods=['DELETE'])
+def clear_exchange(token):
+    if token == admin_token:
+        albums = ExchangeAlbum.query.all()
+        db.session.delete(albums)
+        db.session.commit()
+        return jsonify({"message": "Exchange Cleared"})
     else:
         return jsonify({"error message": "You do not have permission to perform this action"}), 401
