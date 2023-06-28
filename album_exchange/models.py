@@ -101,13 +101,13 @@ class ExchangeAlbum(db.Model):
     number_of_tracks = db.Column(db.Integer, nullable = True)
     label = db.Column(db.String(100), nullable = True)
     cover_url = db.Column(db.String(9999), nullable = True)
-    # We really only need the deezer id for the one api call but storing it might be useful, idk
     deezer_id = db.Column(db.String(20), nullable = True)
     rating = db.Column(db.String(10), nullable = True)
     review = db.Column(db.String, nullable = True)
+    user_email = db.Column(db.String, nullable = False)
     user_token = db.Column(db.String, nullable = False)
 
-    def __init__(self, album_title, artist_name, release_date, genre, number_of_tracks, label, cover_url, deezer_id, rating, review, user_token='', id=''):
+    def __init__(self, album_title, artist_name, release_date, genre, number_of_tracks, label, cover_url, deezer_id, rating, review, user_email, user_token='', id=''):
         self.id = self.set_id()
         self.album_title = album_title
         self.artist_name = artist_name
@@ -119,6 +119,7 @@ class ExchangeAlbum(db.Model):
         self.deezer_id = deezer_id
         self.rating = rating
         self.review = review
+        self.user_email = user_email
         self.user_token = user_token
 
     def set_id(self):
@@ -129,7 +130,7 @@ class ExchangeAlbum(db.Model):
 
 class ExchangeAlbumSchema(ma.Schema):
     class Meta:
-        fields = ['id', 'album_title', 'artist_name', 'release_date', 'genre', 'number_of_tracks', 'cover_url', 'deezer_id', 'review', 'rating', 'label', 'user_token']
+        fields = ['id', 'album_title', 'artist_name', 'release_date', 'genre', 'number_of_tracks', 'cover_url', 'deezer_id', 'review', 'rating', 'label', 'user_email', 'user_token']
 
 exchange_album_schema = ExchangeAlbumSchema()
 exchange_albums_schema = ExchangeAlbumSchema(many = True)

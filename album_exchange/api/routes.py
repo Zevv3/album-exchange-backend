@@ -51,7 +51,7 @@ def create_album():
 def get_user_albums(token):
     albums = Album.query.filter_by(user_token=token).all()
     response = albums_schema.dump(albums)
-    print(response)
+    # print(response)
     return jsonify(response)
 
 # Get ONE album in user library
@@ -73,7 +73,7 @@ def get_one_album(token, id):
 def get_exchange_albums():
     albums = ExchangeAlbum.query.all()
     response = exchange_albums_schema.dump(albums)
-    print(response)
+    # print(response)
     return jsonify(response)
 
 # Update ONE album in user library
@@ -98,7 +98,7 @@ def update_album(token, id):
 @api.route('/albums/<id>', methods=['DELETE'])
 def delete_album(id):
     album = Album.query.get(id)
-    print(album)
+    # print(f"Album: {album}")
     db.session.delete(album)
     db.session.commit()
     response = album_schema.dump(album)
@@ -108,7 +108,8 @@ def delete_album(id):
 @api.route('/albums/review/<token>/<id>', methods=['POST', 'PUT'])
 def review_album(token, id):
     album = Album.query.get(id)
-
+    # print(f"id: {id}")
+    # print(f"album: {album}")
     album.rating = request.json['rating']
     album.review = request.json['review']
 
@@ -116,9 +117,9 @@ def review_album(token, id):
     response = album_schema.dump(album)
     return jsonify(response)
 
-@api.route('/exchange/<token>', methods=['POST', 'GET'])
+@api.route('/exchange/<token>/<email>', methods=['POST', 'GET'])
 # @token_required
-def send_exchange(token):
+def send_exchange(token, email):
     album_title = request.json['album_title']
     artist_name = request.json['artist_name']
     release_date = request.json['release_date']
@@ -129,31 +130,36 @@ def send_exchange(token):
     deezer_id = request.json['deezer_id']
     rating = ''
     review = ''
+    user_email = email
     user_token = token
     # user_token = current_user_token.token
 
-    # print(f"User Token: {current_user_token.token}")
-
-    album = ExchangeAlbum(album_title, artist_name, release_date, genre, number_of_tracks, label, cover_url, deezer_id, rating, review, user_token)
+    album = ExchangeAlbum(album_title, artist_name, release_date, genre, number_of_tracks, label, cover_url, deezer_id, rating, review, user_email, user_token)
+    
+    print(album)
 
     db.session.add(album)
     db.session.commit()
 
     response = exchange_album_schema.dump(album)
     return jsonify(response)
-
+  
 @api.route('/exchange/review/<token>/<id>', methods=['POST', 'PUT'])
 # @token_required
 def review_exchange(token, id):
     album = ExchangeAlbum.query.get(id)
+    # print(f"id: {id}")
+    # print(f"album: {album}")
+    if album.user_token == token:
+        album.rating = request.json['exchange-rating']
+        album.review = request.json['exchange-review']
 
-    album.rating = request.json['rating']
-    album.review = request.json['review']
-
-    db.session.commit()
-    response = exchange_album_schema.dump(album)
-    return jsonify(response)
-
+        db.session.commit()
+        response = exchange_album_schema.dump(album)
+        return jsonify(response)
+    else:
+        return jsonify({"error message": "You can't review someone else's album!"}), 401
+  
 @api.route('/exchange/start/<token>', methods=['POST', 'PUT'])
 # @token_required
 def start_exchange(token):
@@ -161,26 +167,27 @@ def start_exchange(token):
     # so that not just anybody can start the exchange
     if token == admin_token:
         albums = ExchangeAlbum.query.all()
-        users = [album.id for album in albums]
+        users = [album.user_email for album in albums]
         random.shuffle(users)
         for album in albums:
-            if album.id == users[0]:
-                album.id = users[1]
+            if album.user_email == users[0] and len(users) > 1:
+                album.user_email = users[1]
                 users.pop(1)
             else:
-                album.id = users[0]
+                album.user_email = users[0]
                 users.pop(0)
         db.session.commit()
         response = exchange_album_schema.dump(albums)
         return jsonify(response)
     else:
         return jsonify({"error message": "You do not have permission to perform this action"}), 401
-    
+      
 @api.route('/exchange/clear/<token>', methods=['DELETE'])
 def clear_exchange(token):
     if token == admin_token:
         albums = ExchangeAlbum.query.all()
-        db.session.delete(albums)
+        for album in albums:
+          db.session.delete(album)
         db.session.commit()
         return jsonify({"message": "Exchange Cleared"})
     else:
